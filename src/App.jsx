@@ -9,28 +9,19 @@ import {
 } from "@solana/web3.js";
 import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
 import kp from "./keypair.json";
-
 import { Buffer, constants } from "buffer";
 window.Buffer = Buffer;
-
 import "./App.css";
-
-// // Constants
 const { SystemProgram, Keypair } = web3;
-
-// let baseAccount = Keypair.generate();
 const arr = Object.values(kp._keypair.secretKey);
 const secret = new Uint8Array(arr);
 const baseAccount = web3.Keypair.fromSecretKey(secret);
-
 const programID = new PublicKey("G5AEKXqvkk7VumHSkGu8VKjiArx9ikC21j6irhoetFE3");
 const network = clusterApiUrl("devnet");
-console.log(network);
-
 const opts = {
   preflightCommitment: "processed",
 };
-
+import ConnectedContainer from "./Components/ConnectedContainer";
 //App
 const App = () => {
   const [walletAddress, setWalletAddress] = useState(null); //Usuario Logeado
@@ -67,19 +58,32 @@ const App = () => {
 
   const renderArtist = (artist) => (
     <div className="c-artist">
-      <button onClick={() => setArtistView(null)}>X</button>
       <img src={artist.gifLink} />
       <div className="artist-name">{`${artist.userAddress.toString()}`}</div>
       <div className="c-buttons">
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            signInTransactionAndSendMoney(artist.userAddress.toString(), tipValue);
+            signInTransactionAndSendMoney(
+              artist.userAddress.toString(),
+              tipValue
+            );
           }}
         >
-          <input type="number" placeholder="$$" value={tipValue} onChange={onTipChange}/>
-          <button type="submit" className="cta-button connect-wallet-button">
+          <input
+            type="number"
+            placeholder="$$"
+            value={tipValue}
+            onChange={onTipChange}
+          />
+          <button type="submit" className="cta-button tip">
             Tip
+          </button>
+          <button
+            className="cta-button clear-button"
+            onClick={() => setArtistView(null)}
+          >
+            X
           </button>
         </form>
       </div>
@@ -92,7 +96,7 @@ const App = () => {
         <div className="connected-container">
           <button
             className="cta-button submit-gif-button"
-            onClick={createGifAccount}
+            onClick={() => createGifAccount()}
           >
             Do One-Time Initialization For GIF Program Account
           </button>
@@ -102,6 +106,7 @@ const App = () => {
       return (
         <div className="connected-container">
           <form
+            className="upload"
             onSubmit={(event) => {
               event.preventDefault();
               sendGif();
@@ -117,23 +122,23 @@ const App = () => {
               Post
             </button>
           </form>
-          <div className="gif-grid">
-            {gifList.map((item, index) => (
-              <div key={index}>
-                <div className="gif-item">
+          <div className="c-gif-grid">
+            <div className="gif-grid">
+              {gifList.map((item, index) => (
+                <div className="gif-item" key={index}>
                   <img src={item.gifLink} onClick={() => setArtistView(item)} />
-                  Artist: {`${item.userAddress.toString()}`}
+                  User: {`${item.userAddress.toString()}`}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       );
     }
   };
 
-  function signInTransactionAndSendMoney(remitent,tip) {
-    setTipValue(0)
+  function signInTransactionAndSendMoney(remitent, tip) {
+    setTipValue(0);
     const lamports_per_sol = LAMPORTS_PER_SOL;
     (async () => {
       const connection = new Connection(network);
@@ -217,10 +222,10 @@ const App = () => {
     const { value } = event.target;
     setInputValue(value);
   };
-  const onTipChange = (event) =>{
+  const onTipChange = (event) => {
     const { value } = event.target;
     setTipValue(value);
-  }
+  };
 
   const sendGif = async () => {
     if (inputValue.length === 0) {
@@ -249,7 +254,6 @@ const App = () => {
     try {
       const provider = getProvider();
       const program = await getProgram();
-
       console.log("ping");
       await program.rpc.startStuffOff({
         accounts: {
@@ -289,26 +293,44 @@ const App = () => {
     }
   };
 
+  const contentHeader = () => (
+    <div className="c-header">
+      <div className="c-header-image">
+        <img
+          className="header-image"
+          src="src/assets/ikuro_logo.png"
+          alt="ikuro"
+        />
+      </div>
+    </div>
+  );
+
+  const heroHeader = () => (
+    <header className={walletAddress ? "content-header" : "hero-header"}>
+      <div className={walletAddress ? "header-container" : "hero-container"}>
+        <h1 className="header-title">Ikuro 郁郎</h1>
+        <p className="header-text">
+          A space for you to share, inspire and recieve✨
+        </p>
+        {!walletAddress && renderNotConnectedContainer()}
+      </div>
+    </header>
+  );
+
   return (
     <div className="App">
-      <div className="container">
-        <div className="header-container">
-          <p className="header">Block-Reader</p>
-          <p className="sub-text">
-            A space for you to read, post and receive✨
-          </p>
-          <p className="sub-text">
-            Built By: Derek Alvarado, Salvador Perez, Joshua Aviles & Miguel
-            Velarde
-          </p>
-          {artistView != null && renderArtist(artistView)}
-          {!walletAddress && renderNotConnectedContainer()}
-          {walletAddress && renderConnectedContainer()}
-        </div>
+      {!walletAddress && heroHeader()}
+      {walletAddress && contentHeader()}
+      <div className="c-content">
+        {artistView != null && renderArtist(artistView)}
+        {walletAddress && renderConnectedContainer()}
       </div>
       <footer>
         <p>Project Developed during the Etherfuse Hackaton 2023 </p>
-        <p>Built By: Derek Alvarado, Salvador Perez, Joshua Aviles & Miguel</p>
+        <p>
+          Built By: Derek Alvarado, Salvador Perez, Joshua Aviles & Miguel
+          Velarde
+        </p>
       </footer>
     </div>
   );

@@ -11,3 +11,23 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+h1{
+  font-size: 4rem;
+}
+input ::placeholder {
+  text-align: center;
+}
+p{
+  margin:0 ;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+footer {
+  padding: 2rem;
+  text-align: left;
+  color: white;
+  background-color: #1d1d1d;
+}

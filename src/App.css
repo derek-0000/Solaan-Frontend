@@ -1,44 +1,51 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;400;900&display=swap");
 
+body {
+  font-family: "Noto Sans JP", sans-serif;
+  padding: 0;
+  margin: 0;
+}
 .App {
-  height: 100vh;
+  padding: 0;
+  margin: 0;
+  /* height: 100vh; */
   background-color: #fdfdfd;
   overflow: scroll;
   overflow-x: hidden;
   text-align: center;
 }
-
-.container {
-  padding: 0 30px 0 30px;
-}
-
-.authed-container {
-  height: 100%;
+.hero-header {
   display: flex;
   flex-direction: column;
-  padding: 30px;
-}
-
-.header {
-  font-family: 'Sanchez';
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 0;
   margin: 0;
-  font-size: 50px;
-  font-weight: bold;
   color: #1d1d1d;
+  background-image: url("assets/hero1.jpg");
 }
-
-.sub-text {
-  font-family: 'Sanchez';
-  font-size: 25px;
-  color: #1d1d1d;
+.hero-container {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  border-radius: 10px;
+  padding: 4rem 8rem;
 }
-
-.gradient-text {
-  background: -webkit-linear-gradient(left, #60c657 30%, #35aee2 60%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.c-header {
+  position: sticky;
+  top: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
 }
-
+.header-image {
+  width: 150px;
+}
+.header-text {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
 .cta-button {
   height: 45px;
   border: 0;
@@ -52,98 +59,71 @@
   color: white;
   margin: 1rem;
 }
-
 .connect-wallet-button {
-  background: -webkit-linear-gradient(left, #60c657, #35aee2);
-  background-size: 200% 200%;
-  animation: gradient-animation 4s ease infinite;
+  color: #1d1d1d;
+  background: rgba(255, 255, 255, 0.3);
 }
-
 .submit-gif-button {
+  color: #1d1d1d;
   background: -webkit-linear-gradient(left, #4e44ce, #35aee2);
-  background-size: 200% 200%;
-  animation: gradient-animation 4s ease infinite;
   margin-left: 10px;
 }
-
-.footer-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  width: 100%;
-  bottom: 0;
-  left: 0;
-  padding-bottom: 1rem;
+.c-content {
+  display: block;
+  margin: auto auto;
+  width: 60vw;
 }
-
-.twitter-logo {
-  width: 35px;
-  height: 35px;
-}
-
-.footer-text {
-  color: #1d1d1d;
-  font-size: 16px;
-  font-weight: bold;
-}
-
 .gif-grid {
   display: grid;
-  grid-template-columns: auto auto auto auto auto;
-  grid-gap: 1.5rem;
-  justify-items: center;
-  margin: 0;
-  padding: 0;
+  grid-template-columns: auto auto auto;
 }
-
+.gif-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem;
+}
 .gif-item img {
+  max-height: 250px;
   width: 100%;
-  height: 450px;
+  height: auto;
   border-radius: 10px;
   object-fit: cover;
 }
-
-.connected-container input[type='text'] {
-  display: inline-block;
+.connected-container input[type="text"] {
   color: white;
-  padding: 10px;
-  width: 50%;
-  height: 3rem;
   font-size: 16px;
-  box-sizing: border-box;
-  background-color: rgba(0, 0, 0, 0.25);
+  background: rgba(130, 130, 130, 0.3);
+  border: none;
+  height: 2.5rem;
+  border-radius: 10px;
+}
+.c-artist input[type="number"] {
   border: none;
   border-radius: 10px;
-  margin: 50px auto;
-}
-
-.connected-container button {
-  height: 50px;
-}
-
-.c-artist input[type='number']{
-  border-radius: 10px;
-  width: 2%;
   height: 2.5rem;
-  margin: 1rem;
-  border: #1d1d1d solid 2px;
-}
+  width: 4%;
+  background: rgba(130, 130, 130, 0.3);
+  border: solid 2px #55f224;
 
-input ::placeholder{
-  text-align: center;
 }
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+.tip {
+  color: #1d1d1d;
+  background: rgb(68, 205, 206);
+  background: linear-gradient(
+    90deg,
+    rgba(68, 205, 206, 1) 0%,
+    rgba(77, 252, 104, 1) 100%
+  );
 }
-footer{
-  padding: 2rem;
-  margin-top: 2rem;
-  text-align: left;
-  color: white;
-  background-color: #1d1d1d;
-}
-p{
-  margin: 0;
+.clear-button {
+  color: #1d1d1d;
+  font-weight: bold;
+  background: rgb(206, 137, 68);
+  background: linear-gradient(
+    90deg,
+    rgba(206, 137, 68, 1) 0%,
+    rgba(252, 77, 77, 1) 100%
+  );
 }
