@@ -55,22 +55,6 @@ const App = () => {
       Connect Wallet
     </button>
   );
-  const renderPlaceholder = () => {
-    <div className="c-artist">
-      {/* <img src={} /> */}
-      <div className="artist-name">{}</div>
-      <div className="c-buttons">
-        <form>
-          <input type="number" placeholder="$$" />
-          <button type="submit" className="cta-button tip">
-            Tip
-          </button>
-          <button className="cta-button clear-button">X</button>
-        </form>
-      </div>
-    </div>;
-  };
-
   const renderArtist = (artist) => (
     <div className="c-artist">
       <img src={artist.gifLink} />
@@ -313,7 +297,7 @@ const App = () => {
       <div className="c-header-image">
         <img
           className="header-image"
-          src="src/assets/ikuro_logo.png"
+          src="src/assets/ikuro_logo.jpg"
           alt="ikuro"
         />
       </div>
