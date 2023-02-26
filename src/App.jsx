@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
   Connection,
+  LAMPORTS_PER_SOL,
+  Transaction,
+  sendAndConfirmTransaction,
   PublicKey,
   clusterApiUrl,
-  Transaction,
 } from "@solana/web3.js";
 import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
-import {}  from "@solana/wallet-adapter-react"
 import kp from "./keypair.json";
 
 import { Buffer, constants } from "buffer";
@@ -15,7 +16,7 @@ window.Buffer = Buffer;
 import twitterLogo from "./assets/twitter-logo.svg";
 import "./App.css";
 
-// Constants
+// // Constants
 const TWITTER_HANDLE = "derek0000_";
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const { SystemProgram, Keypair } = web3;
@@ -27,6 +28,7 @@ const baseAccount = web3.Keypair.fromSecretKey(secret);
 
 const programID = new PublicKey("G5AEKXqvkk7VumHSkGu8VKjiArx9ikC21j6irhoetFE3");
 const network = clusterApiUrl("devnet");
+console.log(network);
 
 const opts = {
   preflightCommitment: "processed",
@@ -34,17 +36,77 @@ const opts = {
 
 //App
 const App = () => {
-  const connection = new Connection(network);  //Manage Transaction
   const transactionButton = (artist) => (
     <button
       className="cta-button submit-gif-button"
+      onClick={() => signInTransactionAndSendMoney()}
     ></button>
   );
+
+  const lamports_per_sol = LAMPORTS_PER_SOL;
+ 
+  function signInTransactionAndSendMoney(destPubkeyStr, lamports) {
+    (async () => {
+      const connection = new Connection(network);
+      const transaction = new Transaction();
+      lamports = 2* lamports_per_sol;
+      try {
+        destPubkeyStr = "AzZqNiXbaWkA3xbDXHdJ2NBt4JHE9pnRNybBdv8WvSMX";
+        lamports = 2 * lamports_per_sol;
+        console.log("starting sendMoney");
+        const destPubkey = new PublicKey(destPubkeyStr);
+        const walletAccountInfo = await connection.getAccountInfo(
+          user.publicKey
+        );
+        console.log("wallet data size", walletAccountInfo?.data.length);
+        const receiverAccountInfo = await connection.getAccountInfo(destPubkey);
+        console.log("receiver data size", receiverAccountInfo?.data.length);
+        const instruction = SystemProgram.transfer({
+          fromPubkey: user.publicKey,
+          toPubkey: destPubkey,
+          lamports,
+        });
+        let trans = await setWalletTransaction(instruction, connection);
+        let signature = await signAndSendTransaction(user, trans, connection);
+        let result = await connection.confirmTransaction(
+          signature,
+          "singleGossip"
+        );
+        console.log("money sent", result);
+      } catch (e) {
+        console.warn("Failed", e);
+      }
+    })();
+    async function setWalletTransaction(instruction, connection) {
+      const transaction = new Transaction();
+      transaction.add(instruction);
+      transaction.feePayer = user.publicKey;
+      let hash = await connection.getRecentBlockhash();
+      console.log("blockhash", hash);
+      transaction.recentBlockhash = hash.blockhash;
+      return transaction;
+    }
+    async function signAndSendTransaction(user, transaction, connection) {
+      // Sign transaction, broadcast, and confirm
+      const { signature } = await window.solana.signAndSendTransaction(
+        transaction
+      );
+      await connection.confirmTransaction(signature);
+      //let signedTrans = await wallet.signTransaction(transaction);
+      console.log("sign transaction");
+      //let signature = await connection.sendRawTransaction(signedTrans.serialize());
+      console.log("send raw transaction");
+      return signature;
+    }
+  }
 
   const [walletAddress, setWalletAddress] = useState(null); //Usuario Logeado
   const [inputValue, setInputValue] = useState(""); // El valor del input para gifs
   const [gifList, setGifList] = useState([]); // Lista de gifs con usuario que publico
-  const [artistView, setAtisitView] = useState(null); 
+  const [artistView, setAtisitView] = useState(null);
+  const [publicKey, setPublicKey] = useState(null);
+  const [user, setUser] = useState(null);
+  const [userKeypair, setUserKeypair] = useState(null);
 
   const getProvider = () => {
     const connection = new Connection(network, opts.preflightCommitment);
@@ -72,7 +134,11 @@ const App = () => {
     if (solana) {
       const response = await solana.connect();
       console.log("Connected with Public Key:", response.publicKey.toString());
+      const userKeyPair = Keypair.generate();
+      setUserKeypair(userKeyPair);
       setWalletAddress(response.publicKey.toString());
+      setPublicKey(response.publicKey);
+      setUser(response);
     }
   };
   const onInputChange = (event) => {
@@ -102,23 +168,6 @@ const App = () => {
       console.log("Error Sending Gif:", error);
     }
   };
-
-  // const sendTransaction = async () =>{
-  //   try {
-  //     const provider = getProvider();
-  //     const program = await getProgram();
-  //     await program.rpc.sendSol("1", {
-  //       accounts: {
-  //         from: "ALspbXRNkd6Ux4HvC4qSzUwJt38iWo6kGpgdMPrP3qgV",
-  //         to: "AzZqNiXbaWkA3xbDXHdJ2NBt4JHE9pnRNybBdv8WvSMX",
-  //       },
-  //     });
-  //     console.log("GIF successfully sent to program", inputValue);
-  //     await getGifList();
-  //   } catch (error) {
-  //     console.log("Error Sending Gif:", error);
-  //   }
-  // }
 
   const createGifAccount = async () => {
     try {
@@ -157,7 +206,7 @@ const App = () => {
       );
       console.log("Got the account", account);
       setGifList(account.gifList);
-      console.log(gifList)
+      console.log(gifList);
     } catch (error) {
       console.log("Error in getGifList: ", error);
       setGifList(null);
@@ -227,8 +276,8 @@ const App = () => {
           </form>
           <div className="gif-grid">
             {gifList.map((item, index) => (
-              <div>
-                <div className="gif-item" key={index}>
+              <div key={index}>
+                <div className="gif-item">
                   <img src={item.gifLink} onClick={() => setAtisitView(item)} />
                   Artist: {`${item.userAddress.toString()}`}
                 </div>
