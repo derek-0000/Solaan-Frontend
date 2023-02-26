@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Connection, PublicKey, clusterApiUrl, Transaction  } from "@solana/web3.js";
+import {
+  Connection,
+  PublicKey,
+  clusterApiUrl,
+  Transaction,
+} from "@solana/web3.js";
 import { Program, AnchorProvider, web3 } from "@project-serum/anchor";
-
+import {}  from "@solana/wallet-adapter-react"
 import kp from "./keypair.json";
 
 import { Buffer, constants } from "buffer";
@@ -29,11 +34,17 @@ const opts = {
 
 //App
 const App = () => {
+  const connection = new Connection(network);  //Manage Transaction
+  const transactionButton = (artist) => (
+    <button
+      className="cta-button submit-gif-button"
+    ></button>
+  );
 
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [inputValue, setInputValue] = useState("");
-  const [gifList, setGifList] = useState([]);
-  const [artistView, setAtisitView] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null); //Usuario Logeado
+  const [inputValue, setInputValue] = useState(""); // El valor del input para gifs
+  const [gifList, setGifList] = useState([]); // Lista de gifs con usuario que publico
+  const [artistView, setAtisitView] = useState(null); 
 
   const getProvider = () => {
     const connection = new Connection(network, opts.preflightCommitment);
@@ -92,6 +103,23 @@ const App = () => {
     }
   };
 
+  // const sendTransaction = async () =>{
+  //   try {
+  //     const provider = getProvider();
+  //     const program = await getProgram();
+  //     await program.rpc.sendSol("1", {
+  //       accounts: {
+  //         from: "ALspbXRNkd6Ux4HvC4qSzUwJt38iWo6kGpgdMPrP3qgV",
+  //         to: "AzZqNiXbaWkA3xbDXHdJ2NBt4JHE9pnRNybBdv8WvSMX",
+  //       },
+  //     });
+  //     console.log("GIF successfully sent to program", inputValue);
+  //     await getGifList();
+  //   } catch (error) {
+  //     console.log("Error Sending Gif:", error);
+  //   }
+  // }
+
   const createGifAccount = async () => {
     try {
       const provider = getProvider();
@@ -129,6 +157,7 @@ const App = () => {
       );
       console.log("Got the account", account);
       setGifList(account.gifList);
+      console.log(gifList)
     } catch (error) {
       console.log("Error in getGifList: ", error);
       setGifList(null);
@@ -228,6 +257,7 @@ const App = () => {
 
   return (
     <div className="App">
+      {transactionButton()}
       <div className="container">
         <div className="header-container">
           <p className="header">Block-Reader</p>
