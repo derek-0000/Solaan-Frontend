@@ -109,7 +109,7 @@
   color: white;
   padding: 10px;
   width: 50%;
-  height: 60px;
+  height: 3rem;
   font-size: 16px;
   box-sizing: border-box;
   background-color: rgba(0, 0, 0, 0.25);
@@ -122,3 +122,28 @@
   height: 50px;
 }
 
+.c-artist input[type='number']{
+  border-radius: 10px;
+  width: 2%;
+  height: 2.5rem;
+  margin: 1rem;
+  border: #1d1d1d solid 2px;
+}
+
+input ::placeholder{
+  text-align: center;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+footer{
+  padding: 2rem;
+  margin-top: 2rem;
+  text-align: left;
+  color: white;
+  background-color: #1d1d1d;
+}
+p{
+  margin: 0;
+}

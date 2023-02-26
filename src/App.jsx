@@ -13,12 +13,9 @@ import kp from "./keypair.json";
 import { Buffer, constants } from "buffer";
 window.Buffer = Buffer;
 
-import twitterLogo from "./assets/twitter-logo.svg";
 import "./App.css";
 
 // // Constants
-const TWITTER_HANDLE = "derek0000_";
-const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 const { SystemProgram, Keypair } = web3;
 
 // let baseAccount = Keypair.generate();
@@ -36,25 +33,115 @@ const opts = {
 
 //App
 const App = () => {
-  const transactionButton = (artist) => (
+  const [walletAddress, setWalletAddress] = useState(null); //Usuario Logeado
+  const [inputValue, setInputValue] = useState(""); // El valor del input para gifs
+  const [tipValue, setTipValue] = useState(""); // El valor del input para gifs
+  const [gifList, setGifList] = useState([]); // Lista de gifs con usuario que publico
+  const [artistView, setArtistView] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const onLoad = async () => {
+      await checkIfConnected();
+    };
+    window.addEventListener("load", onLoad);
+    return () => window.removeEventListener("load", onLoad);
+  }, []);
+
+  useEffect(() => {
+    if (walletAddress) {
+      console.log("Fetching GIF list...");
+      getGifList();
+    }
+  }, [walletAddress]);
+
+  //Conditional Copmponents
+  const renderNotConnectedContainer = () => (
     <button
-      className="cta-button submit-gif-button"
-      onClick={() => signInTransactionAndSendMoney()}
-    ></button>
+      className="cta-button connect-wallet-button"
+      onClick={() => connectWallet()}
+    >
+      Connect Wallet
+    </button>
   );
 
-  const lamports_per_sol = LAMPORTS_PER_SOL;
- 
-  function signInTransactionAndSendMoney(destPubkeyStr, lamports) {
+  const renderArtist = (artist) => (
+    <div className="c-artist">
+      <button onClick={() => setArtistView(null)}>X</button>
+      <img src={artist.gifLink} />
+      <div className="artist-name">{`${artist.userAddress.toString()}`}</div>
+      <div className="c-buttons">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            signInTransactionAndSendMoney(artist.userAddress.toString(), tipValue);
+          }}
+        >
+          <input type="number" placeholder="$$" value={tipValue} onChange={onTipChange}/>
+          <button type="submit" className="cta-button connect-wallet-button">
+            Tip
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+
+  const renderConnectedContainer = () => {
+    if (gifList === null) {
+      return (
+        <div className="connected-container">
+          <button
+            className="cta-button submit-gif-button"
+            onClick={createGifAccount}
+          >
+            Do One-Time Initialization For GIF Program Account
+          </button>
+        </div>
+      );
+    } else {
+      return (
+        <div className="connected-container">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              sendGif();
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Publish Your Art!"
+              value={inputValue}
+              onChange={onInputChange}
+            />
+            <button type="submit" className="cta-button submit-gif-button">
+              Post
+            </button>
+          </form>
+          <div className="gif-grid">
+            {gifList.map((item, index) => (
+              <div key={index}>
+                <div className="gif-item">
+                  <img src={item.gifLink} onClick={() => setArtistView(item)} />
+                  Artist: {`${item.userAddress.toString()}`}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+  };
+
+  function signInTransactionAndSendMoney(remitent,tip) {
+    setTipValue(0)
+    const lamports_per_sol = LAMPORTS_PER_SOL;
     (async () => {
       const connection = new Connection(network);
       const transaction = new Transaction();
-      lamports = 2* lamports_per_sol;
+      const lamports = tip * lamports_per_sol;
       try {
-        destPubkeyStr = "AzZqNiXbaWkA3xbDXHdJ2NBt4JHE9pnRNybBdv8WvSMX";
-        lamports = 2 * lamports_per_sol;
         console.log("starting sendMoney");
-        const destPubkey = new PublicKey(destPubkeyStr);
+        const destPubkey = new PublicKey(remitent);
         const walletAccountInfo = await connection.getAccountInfo(
           user.publicKey
         );
@@ -87,27 +174,16 @@ const App = () => {
       return transaction;
     }
     async function signAndSendTransaction(user, transaction, connection) {
-      // Sign transaction, broadcast, and confirm
       const { signature } = await window.solana.signAndSendTransaction(
         transaction
       );
       await connection.confirmTransaction(signature);
-      //let signedTrans = await wallet.signTransaction(transaction);
       console.log("sign transaction");
-      //let signature = await connection.sendRawTransaction(signedTrans.serialize());
       console.log("send raw transaction");
       return signature;
     }
   }
-
-  const [walletAddress, setWalletAddress] = useState(null); //Usuario Logeado
-  const [inputValue, setInputValue] = useState(""); // El valor del input para gifs
-  const [gifList, setGifList] = useState([]); // Lista de gifs con usuario que publico
-  const [artistView, setAtisitView] = useState(null);
-  const [publicKey, setPublicKey] = useState(null);
-  const [user, setUser] = useState(null);
-  const [userKeypair, setUserKeypair] = useState(null);
-
+  // Blockchain Logic
   const getProvider = () => {
     const connection = new Connection(network, opts.preflightCommitment);
     const provider = new AnchorProvider(
@@ -117,7 +193,6 @@ const App = () => {
     );
     return provider;
   };
-  // Wallet logic
   const checkIfConnected = async () => {
     if (window?.solana?.isPhantom) {
       console.log("Phantom wallet found!");
@@ -128,16 +203,13 @@ const App = () => {
       alert("Solana object not found! Get a Phantom Wallet 👻");
     }
   };
-
   const connectWallet = async () => {
     const { solana } = window;
     if (solana) {
       const response = await solana.connect();
       console.log("Connected with Public Key:", response.publicKey.toString());
       const userKeyPair = Keypair.generate();
-      setUserKeypair(userKeyPair);
       setWalletAddress(response.publicKey.toString());
-      setPublicKey(response.publicKey);
       setUser(response);
     }
   };
@@ -145,6 +217,10 @@ const App = () => {
     const { value } = event.target;
     setInputValue(value);
   };
+  const onTipChange = (event) =>{
+    const { value } = event.target;
+    setTipValue(value);
+  }
 
   const sendGif = async () => {
     if (inputValue.length === 0) {
@@ -213,117 +289,27 @@ const App = () => {
     }
   };
 
-  const renderNotConnectedContainer = () => (
-    <button
-      className="cta-button connect-wallet-button"
-      onClick={() => connectWallet()}
-    >
-      Connect Wallet
-    </button>
-  );
-
-  const renderArtist = (artist) => (
-    <div className="c-artist">
-      <img src={artist.gifLink} />
-      <div className="artist-name">{`${artist.userAddress.toString()}`}</div>
-      <div className="c-buttons">
-        <button
-          className="cta-button connect-wallet-button"
-          onClick={() => setAtisitView(null)}
-        >
-          X
-        </button>
-        <button
-          className="cta-button connect-wallet-button"
-          onClick={() => handeTransaction()}
-        >
-          Tip
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderConnectedContainer = () => {
-    if (gifList === null) {
-      return (
-        <div className="connected-container">
-          <button
-            className="cta-button submit-gif-button"
-            onClick={createGifAccount}
-          >
-            Do One-Time Initialization For GIF Program Account
-          </button>
-        </div>
-      );
-    } else {
-      return (
-        <div className="connected-container">
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              sendGif();
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Enter gif link!"
-              value={inputValue}
-              onChange={onInputChange}
-            />
-            <button type="submit" className="cta-button submit-gif-button">
-              Post
-            </button>
-          </form>
-          <div className="gif-grid">
-            {gifList.map((item, index) => (
-              <div key={index}>
-                <div className="gif-item">
-                  <img src={item.gifLink} onClick={() => setAtisitView(item)} />
-                  Artist: {`${item.userAddress.toString()}`}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-  };
-
-  useEffect(() => {
-    const onLoad = async () => {
-      await checkIfConnected();
-    };
-    window.addEventListener("load", onLoad);
-    return () => window.removeEventListener("load", onLoad);
-  }, []);
-
-  useEffect(() => {
-    if (walletAddress) {
-      console.log("Fetching GIF list...");
-      getGifList();
-    }
-  }, [walletAddress]);
-
   return (
     <div className="App">
-      {transactionButton()}
       <div className="container">
         <div className="header-container">
           <p className="header">Block-Reader</p>
           <p className="sub-text">
             A space for you to read, post and receive✨
           </p>
+          <p className="sub-text">
+            Built By: Derek Alvarado, Salvador Perez, Joshua Aviles & Miguel
+            Velarde
+          </p>
           {artistView != null && renderArtist(artistView)}
           {!walletAddress && renderNotConnectedContainer()}
           {walletAddress && renderConnectedContainer()}
         </div>
-        <div className="footer-container">
-          <a className="footer-text">
-            Built By: Derek Alvarado, Salvador Perez, Joshua Aviles & Miguel
-            Velarde
-          </a>
-        </div>
       </div>
+      <footer>
+        <p>Project Developed during the Etherfuse Hackaton 2023 </p>
+        <p>Built By: Derek Alvarado, Salvador Perez, Joshua Aviles & Miguel</p>
+      </footer>
     </div>
   );
 };
