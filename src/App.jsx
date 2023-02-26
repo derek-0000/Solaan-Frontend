@@ -55,6 +55,21 @@ const App = () => {
       Connect Wallet
     </button>
   );
+  const renderPlaceholder = () => {
+    <div className="c-artist">
+      {/* <img src={} /> */}
+      <div className="artist-name">{}</div>
+      <div className="c-buttons">
+        <form>
+          <input type="number" placeholder="$$" />
+          <button type="submit" className="cta-button tip">
+            Tip
+          </button>
+          <button className="cta-button clear-button">X</button>
+        </form>
+      </div>
+    </div>;
+  };
 
   const renderArtist = (artist) => (
     <div className="c-artist">
@@ -321,8 +336,9 @@ const App = () => {
     <div className="App">
       {!walletAddress && heroHeader()}
       {walletAddress && contentHeader()}
+
       <div className="c-content">
-        {artistView != null && renderArtist(artistView)}
+          {artistView != null ? renderArtist(artistView) : null}
         {walletAddress && renderConnectedContainer()}
       </div>
       <footer>

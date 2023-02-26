@@ -127,3 +127,10 @@ body {
     rgba(252, 77, 77, 1) 100%
   );
 }
+.placeholder{
+  position: sticky;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vh;
+}
